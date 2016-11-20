@@ -11,23 +11,29 @@
   "Make registarion of user using cinema.auth"
   (let [registr-result (auth/registr! params)]
     (if (not (nil? (:id registr-result)))
-      "make-session"
+      (-> (response/found "/")
+          (assoc :session {:id (:id registr-result)}))
       (layout/render "login_registration.html"
-                     (assoc registr-result
+                     (assoc registr-result 
                             :form "registration")))))
 
 (defroutes registration-routes
   (context "/registration" []
-           (POST "/" {:keys [params]}
+           (GET "/" [] (layout/render "login_registration.html"
+                                      (assoc {} :form "registration")))
+           (POST "/" {:keys [params session]}
                  (make-registration! params))))
 
-
 (defroutes login-routes
+
   (context "/login" []
            (GET "/" [] (layout/render "login_registration.html"
                                       (assoc {} :form "login")))
            (POST "/" [login pass]
                  (str "login: " login " pass: " pass))))
 
+
 (def auth-routes
-  (routes #'registration-routes #'login-routes))
+  (auth/wrap-authenticated false [login-routes
+                                  registration-routes]
+                     "/"))
