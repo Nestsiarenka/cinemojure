@@ -10,6 +10,8 @@
   "ERROR: duplicate key value violates unique constraint \"users_email_key\"")
 (def login-duplicated
   "ERROR: duplicate key value violates unique constraint \"users_login_key\"")
+(def login-password-wrong
+  "such login and password combination is incorrect")
 
 (defn handle-exception
   [e validated-registration-data]
@@ -49,7 +51,9 @@ with bouncer validation library"
       (->>
        (get-in validated-registration-data [:values :pass])
        (hashers/derive)
-       (assoc (:values validated-registration-data) :user-group-id 2 :pass)       
+       (assoc (:values validated-registration-data)
+              :user-group-id 2
+              :pass)
        (db/create-user!))      
       (catch Exception e
         (handle-exception e
@@ -60,6 +64,13 @@ with bouncer validation library"
   (comp add-user-to-db!
         validate-registration-data))
 
+(defn login
+  [{:keys [pass] :as login-data}]
+  (let [user (db/get-user-by-login login-data)]
+    (if (hashers/check pass (:pass user))
+      (select-keys user [:id])
+      {:another-error login-password-wrong}))
+  )
 
 (defn is-user?
   [{:keys [predicate id]}]
@@ -84,25 +95,46 @@ with bouncer validation library"
       (is-user?)))
 
 (defn is-user-active?
-  [id]
+  [{:keys [id]}]
   (launch-is-user-check is-user-active-predicate id []))
 
 (defn is-user-in-group?
-  [id group-alias]
+  [{:keys [id]} group-alias]
   (launch-is-user-check is-user-in-group-predicate id [group-alias]))
 
+(defn get-wrap-authenticated-middleware
+  [value redirect-path]
+  (fn [handler]
+    (fn [{:keys [session] :as request}]
+      (if (= value (is-user-active? session))        
+        (handler request)
+        (redirect redirect-path))))
+        )
+
+(defn map-wrap-routes
+  [middleware routes-vector]
+  (->>
+       (map (fn [route]
+              (wrap-routes route middleware))
+            routes-vector)
+       (apply routes ))
+  )
 
 (defn wrap-authenticated
-  [value routes-vector redirect-path]
-  (let [middleware
-        (fn [handler]
-          (fn [{:keys [session] :as request}]
-            (if (= value (is-user-active? session))        
-              (handler request)
-              (redirect redirect-path))))]
-    (->>
-     (map (fn [route]
-            (wrap-routes route middleware))
-          routes-vector)
-     (apply routes ))))
+  [value redirect-path & routes-vector]
+  (-> (get-wrap-authenticated-middleware
+       value redirect-path)
+      (map-wrap-routes routes-vector)))
 
+(defn get-wrap-user-in-group-middleware
+  [groups redirect-path]
+  (fn [handler]
+    (fn [{:keys [session] :as request}]
+      (if (some (partial is-user-in-group? session) groups)
+        (handler request)
+        (redirect redirect-path)))))
+
+(defn wrap-user-in-group
+  [groups redirect-path & routes-vector]
+  (-> (get-wrap-user-in-group-middleware groups redirect-path)
+      (map-wrap-routes routes-vector)))

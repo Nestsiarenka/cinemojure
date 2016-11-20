@@ -1,0 +1,2 @@
+- make email case insensitive (write lower case to db)
+- set user group by alias, not by id

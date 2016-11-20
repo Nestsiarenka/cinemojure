@@ -12,7 +12,8 @@
   (let [registr-result (auth/registr! params)]
     (if (not (nil? (:id registr-result)))
       (-> (response/found "/")
-          (assoc :session {:id (:id registr-result)}))
+          (assoc :session {:id (:id registr-result)})
+          )
       (layout/render "login_registration.html"
                      (assoc registr-result 
                             :form "registration")))))
@@ -32,8 +33,15 @@
            (POST "/" [login pass]
                  (str "login: " login " pass: " pass))))
 
+(defroutes logout
+  (auth/wrap-authenticated true "/hello"
+                           (GET "/logout" []
+                                (->
+                                 (response/found "/login")
+                                 (assoc :session nil)))))
 
 (def auth-routes
-  (auth/wrap-authenticated false [login-routes
-                                  registration-routes]
-                     "/"))
+  (auth/wrap-authenticated false "/"
+                             login-routes
+                             registration-routes
+                             logout))

@@ -1,4 +1,4 @@
-n-- :name create-user! :<! :n
+-- :name create-user! :<! :1
 -- :doc creates a new user record
 INSERT INTO users
 (first_name, last_name, email, login, user_group_id, pass)
@@ -17,15 +17,19 @@ WHERE id = :id
 SELECT * FROM users
 WHERE id = :id
 
+-- :name get-user-by-login :? :1
+-- :doc retrieve a user given the login.
+SELECT * FROM users
+WHERE login = :login
+
 -- :name get-users :? :*
 -- :doc retrieve all users.
 SELECT * FROM users
 
 -- :name get-user-role :? :1
 -- :doc get group that an user belong.
-SELECT user_groups.id, user_groups.alias FROM user_groups
-JOIN users ON user_groups.id = users.user_group_id
-WHERE users.id = :id
+SELECT user_groups.id, user_groups.alias FROM user_groups, users
+WHERE user_groups.id = users.user_group_id AND users.id = :id
 
 -- :name delete-user! :! :n
 -- :doc delete a user given the id
