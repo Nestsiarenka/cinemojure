@@ -6,7 +6,8 @@
             [cinema.config :refer [env]]
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.tools.logging :as log]
-            [mount.core :as mount])
+            [mount.core :as mount]
+            [cinema.logic.booking :refer :all])
   (:gen-class))
 
 (def cli-options

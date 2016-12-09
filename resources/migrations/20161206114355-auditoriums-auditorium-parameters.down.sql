@@ -1,0 +1,1 @@
+DROP TABLE auditoriums_auditorium_parameters;

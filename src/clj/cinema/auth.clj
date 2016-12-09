@@ -69,7 +69,7 @@ with bouncer validation library"
   (let [user (db/get-user-by-login login-data)]
     (if (hashers/check pass (:pass user))
       (select-keys user [:id])
-      {:another-error login-password-wrong}))
+      {:values login-data :another-error login-password-wrong}))
   )
 
 (defn is-user?
@@ -138,3 +138,13 @@ with bouncer validation library"
   [groups redirect-path & routes-vector]
   (-> (get-wrap-user-in-group-middleware groups redirect-path)
       (map-wrap-routes routes-vector)))
+
+(defn wrap-get-user-info
+  [handler]
+  (fn [{:keys [session] :as request}]
+    (handler (if (contains? session :id)
+               (->> session
+                    (db/get-user-info)
+                    (assoc-in request [:params :user]))
+               request))
+    ))

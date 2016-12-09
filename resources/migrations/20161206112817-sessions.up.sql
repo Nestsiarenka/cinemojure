@@ -1,0 +1,7 @@
+CREATE TABLE sessions
+(id SERIAL PRIMARY KEY,
+ auditorium_id SMALLINT NOT NULL REFERENCES auditoriums,
+ film_id INTEGER NOT NULL REFERENCES films,
+ begin_time TIMESTAMP WITHOUT TIME ZONE NOT NULL);
+
+

@@ -6,42 +6,51 @@
             [cinema.auth :as auth]
             ))
 
+(defn write-session
+  [id-or-error-map previous-operation]
+  (if (not (nil? (:id id-or-error-map)))
+    (-> (response/found "/")
+        (assoc :session {:id (:id id-or-error-map)}))
+    (layout/render "login_registration.html"
+                   (assoc id-or-error-map :form
+                          previous-operation))))
+
 (defn make-registration!
   [params]
   "Make registarion of user using cinema.auth"
-  (let [registr-result (auth/registr! params)]
-    (if (not (nil? (:id registr-result)))
-      (-> (response/found "/")
-          (assoc :session {:id (:id registr-result)})
-          )
-      (layout/render "login_registration.html"
-                     (assoc registr-result 
-                            :form "registration")))))
+  (-> (auth/registr! params)
+      (write-session "registration")))
 
 (defroutes registration-routes
   (context "/registration" []
            (GET "/" [] (layout/render "login_registration.html"
-                                      (assoc {} :form "registration")))
+                                      {:form "registration"}))
            (POST "/" {:keys [params session]}
                  (make-registration! params))))
+
+(defn login
+  [params]
+  (-> (auth/login params)
+      (write-session "login")))
 
 (defroutes login-routes
 
   (context "/login" []
            (GET "/" [] (layout/render "login_registration.html"
-                                      (assoc {} :form "login")))
-           (POST "/" [login pass]
-                 (str "login: " login " pass: " pass))))
+                                       {:form "login"}))
+           (POST "/" {:keys [params]}
+                 (login params))))
 
 (defroutes logout
-  (auth/wrap-authenticated true "/hello"
-                           (GET "/logout" []
+  (auth/wrap-authenticated true "/login"
+                           (GET "/logout" [session]
                                 (->
                                  (response/found "/login")
                                  (assoc :session nil)))))
 
 (def auth-routes
-  (auth/wrap-authenticated false "/"
-                             login-routes
-                             registration-routes
-                             logout))
+  (routes 
+   (auth/wrap-authenticated false "/"
+                            login-routes
+                            registration-routes)
+   logout))

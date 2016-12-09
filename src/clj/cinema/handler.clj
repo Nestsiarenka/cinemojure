@@ -6,7 +6,8 @@
             [compojure.route :as route]
             [cinema.env :refer [defaults]]
             [mount.core :as mount]
-            [cinema.middleware :as middleware]))
+            [cinema.middleware :as middleware]
+            [cinema.auth :as auth]))
 
 (mount/defstate init-app
                 :start ((or (:init defaults) identity))
@@ -16,7 +17,8 @@
   (routes
     (-> (routes #'home-routes #'auth-routes)
         (wrap-routes middleware/wrap-csrf)
-        (wrap-routes middleware/wrap-formats))
+        (wrap-routes middleware/wrap-formats)
+        (wrap-routes auth/wrap-get-user-info))
     (route/not-found
       (:body
         (error-page {:status 404

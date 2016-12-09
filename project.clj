@@ -27,7 +27,8 @@
                  [ring-webjars "0.1.1"]
                  [ring/ring-defaults "0.2.1"]
                  [selmer "1.10.0"]
-                 [buddy/buddy-hashers "1.0.0"]]
+                 [buddy/buddy-hashers "1.0.0"]
+                 [ddellacosta/oauth2-client "0.2.0"]]
 
   :min-lein-version "2.0.0"
 

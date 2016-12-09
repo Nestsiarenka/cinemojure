@@ -69,3 +69,9 @@
   (sql-value [value] (to-pg-json value))
   IPersistentVector
   (sql-value [value] (to-pg-json value)))
+
+(defn keyword->pg-enum
+  [kw enum-type]
+  (doto (org.postgresql.util.PGobject.)
+    (.setType enum-type)
+    (.setValue (name kw))))

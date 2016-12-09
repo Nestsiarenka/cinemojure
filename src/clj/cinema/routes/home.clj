@@ -4,14 +4,14 @@
             [ring.util.http-response :as response]
             [clojure.java.io :as io]))
 
-(defn home-page []
+(defn home-page [params]
   (layout/render
-    "home.html" {:docs (-> "docs/docs.md" io/resource slurp)}))
+   "home.html" (assoc params :docs (-> "docs/docs.md" io/resource slurp))))
 
 (defn about-page []
   (layout/render "about.html"))
 
 (defroutes home-routes
-  (GET "/" [] (home-page))
+  (GET "/" {:keys [params]} (home-page params))
   (GET "/about" [] (about-page)))
 

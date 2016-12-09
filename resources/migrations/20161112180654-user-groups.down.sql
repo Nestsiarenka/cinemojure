@@ -1,1 +1,1 @@
-DROP TABLE user_groups CASCADE;
+DROP TABLE user_groups;
