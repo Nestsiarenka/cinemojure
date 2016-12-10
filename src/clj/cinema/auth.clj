@@ -4,7 +4,11 @@
             [bouncer.validators :as v]
             [buddy.hashers :as hashers]
             [compojure.core :refer [wrap-routes defroutes routes]]
-            [ring.util.response :refer [redirect]]))
+            [ring.util.response :refer [redirect]]
+            [cinema.percistance.user :refer :all]
+            [cinema.models.user :refer :all]))
+
+(def loged-users (atom ()))
 
 (def email-duplicated
   "ERROR: duplicate key value violates unique constraint \"users_email_key\"")
@@ -43,42 +47,86 @@ with bouncer validation library"
                     :first-name [v/string v/required]
                     :second-name [v/string v/required])))
 
+(defn select-values [map ks]
+         (reduce #(conj %1 (map %2)) [] ks))
+
+(defn prepare-data-for-user-creation [values]
+  (-> values
+      (assoc :user-group {:id 2}
+             :pass (hashers/derive (:pass values)))
+      (select-values
+       [:id :first-name :second-name :login :email
+        :user-group :last-login :is-active :pass])))
 
 (defn add-user-to-db!
   [validated-registration-data]
-  "Adding user to database"  (if (nil? (:errors validated-registration-data))
-    (try 
-      (->>
-       (get-in validated-registration-data [:values :pass])
-       (hashers/derive)
-       (assoc (:values validated-registration-data)
-              :user-group-id 2
-              :pass)
-       (db/create-user!))      
+  "Adding user to database"
+  (if (nil? (:errors validated-registration-data))
+    (try
+      (let [values (:values validated-registration-data)]
+        (let [init-data (prepare-data-for-user-creation values)]
+          (create-user! (apply ->User init-data)))) 
       (catch Exception e
         (handle-exception e
-                          validated-registration-data)))
+                         validated-registration-data)))
     validated-registration-data))
 
+(defn now []
+  (str (.getTime (new java.util.Date))))
+
+(defn add-to-loged-users [user-or-errors]
+  (if (instance? cinema.models.user.User user-or-errors)
+    (do
+      (let [user (assoc user-or-errors :login-time (now))]
+        (swap! loged-users conj user)
+        user))
+    (user-or-errors))
+  )
+
 (def registr!
-  (comp add-user-to-db!
-        validate-registration-data))
+  (comp
+   add-to-loged-users
+   add-user-to-db!
+   validate-registration-data))
 
 (defn login
-  [{:keys [pass] :as login-data}]
-  (let [user (db/get-user-by-login login-data)]
+  [{:keys [pass login] :as login-data}]
+  (let [user (get-user-by-login login)]
     (if (hashers/check pass (:pass user))
-      (select-keys user [:id])
+      (add-to-loged-users user)
       {:values login-data :another-error login-password-wrong}))
   )
 
+(defn user-find-predicate [user-id login-time]
+  (fn [user] (and (= user-id (:id user))
+                  (= login-time (:login-time user)))))
+
+(defn delete-from-loged-users
+  [{:keys [id login-time]}]
+  (swap! loged-users (fn [coll]
+                       (remove
+                        (user-find-predicate id
+                                             login-time)
+                        coll))))
+
+(def logout delete-from-loged-users)
+
+(defn get-from-loged-users
+  [user-id login-time]
+  (->
+   #(when ((user-find-predicate user-id login-time) %) %)
+   (some @loged-users)
+   )) 
+
 (defn is-user?
-  [{:keys [predicate id]}]
-  (predicate (db/get-user {:id id})))
+  [{:keys [predicate id login-time]}]
+  (predicate (get-from-loged-users id login-time)))
 
 (defn wrap-is-user-params
-  [predicate id]
-  {:predicate predicate :id id})
+  [predicate id login-time]
+  {:predicate predicate
+   :id id
+   :login-time login-time})
 
 (defn is-user-active-predicate []
   (fn [user] (and (some? user) (:is_active user))))
@@ -86,21 +134,24 @@ with bouncer validation library"
 (defn is-user-in-group-predicate
   [group-alias]
   (fn [user] (and ((is-user-active-predicate) user)
-                  (= (:alias (db/get-user-role user)) group-alias))))
+                  (= (get-in user [:user_group :alias])
+                     group-alias))))
 
 (defn launch-is-user-check
-  [predicate id predicate-params]
+  [predicate id login-time predicate-params]
   (-> (apply predicate predicate-params)
-      (wrap-is-user-params id)
+      (wrap-is-user-params id login-time)
       (is-user?)))
 
 (defn is-user-active?
-  [{:keys [id]}]
-  (launch-is-user-check is-user-active-predicate id []))
+  [{:keys [id login-time]}]
+  (launch-is-user-check is-user-active-predicate
+                        id login-time []))
 
 (defn is-user-in-group?
-  [{:keys [id]} group-alias]
-  (launch-is-user-check is-user-in-group-predicate id [group-alias]))
+  [{:keys [id login-time]} group-alias]
+  (launch-is-user-check is-user-in-group-predicate id
+                        login-time [group-alias]))
 
 (defn get-wrap-authenticated-middleware
   [value redirect-path]
@@ -121,9 +172,9 @@ with bouncer validation library"
   )
 
 (defn wrap-authenticated
-  [value redirect-path & routes-vector]
+  [allow redirect-path & routes-vector]
   (-> (get-wrap-authenticated-middleware
-       value redirect-path)
+       allow redirect-path)
       (map-wrap-routes routes-vector)))
 
 (defn get-wrap-user-in-group-middleware
@@ -136,15 +187,48 @@ with bouncer validation library"
 
 (defn wrap-user-in-group
   [groups redirect-path & routes-vector]
-  (-> (get-wrap-user-in-group-middleware groups redirect-path)
+ (-> (get-wrap-user-in-group-middleware groups redirect-path)
       (map-wrap-routes routes-vector)))
 
 (defn wrap-get-user-info
   [handler]
   (fn [{:keys [session] :as request}]
     (handler (if (contains? session :id)
-               (->> session
-                    (db/get-user-info)
+               (->> (get-from-loged-users (:id session)
+                                          (:login-time session))
                     (assoc-in request [:params :user]))
                request))
     ))
+
+(defn updating-algorithm
+  [{:keys [id login-time] :as new-user-info}]
+  (fn [old-user-info]
+    (if ((user-find-predicate id login-time) old-user-info)
+      new-user-info
+      old-user-info
+      )))
+
+(defn update-in-loged-users
+  [{:keys [id login-time] :as user}]
+  (swap! loged-users #(map (updating-algorithm user) %)))
+
+(defn wrap-update-user-current-route
+  [handler]
+  (fn [{:keys [session] :as request}]
+    (let [user (get-from-loged-users (:id session)
+                                     (:login-time session))]
+      (-> user
+          (assoc :current-route (get-in request
+                                        [:compojure/route
+                                         1]))
+          (update-in-loged-users)))
+    (handler request)
+    ))
+
+(defn users-in-route
+  [route-string]
+  (-> (filter
+       #(= route-string
+           (:current-route %))
+       @loged-users)
+      (count)))

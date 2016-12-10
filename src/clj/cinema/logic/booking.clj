@@ -38,5 +38,3 @@
          (apply add-to-incart-seats))
     updated-seats))
 
-(defn )
-

@@ -7,12 +7,14 @@
             ))
 
 (defn write-session
-  [id-or-error-map previous-operation]
-  (if (not (nil? (:id id-or-error-map)))
+  [user-or-error-map previous-operation]
+  (if (not (nil? (:id user-or-error-map)))
     (-> (response/found "/")
-        (assoc :session {:id (:id id-or-error-map)}))
+        (assoc :session {:id (:id user-or-error-map)
+                         :login-time (:login-time
+                                      user-or-error-map)}))
     (layout/render "login_registration.html"
-                   (assoc id-or-error-map :form
+                   (assoc user-or-error-map :form
                           previous-operation))))
 
 (defn make-registration!
@@ -25,7 +27,7 @@
   (context "/registration" []
            (GET "/" [] (layout/render "login_registration.html"
                                       {:form "registration"}))
-           (POST "/" {:keys [params session]}
+           (POST "/" {:keys [params]}
                  (make-registration! params))))
 
 (defn login
@@ -43,7 +45,8 @@
 
 (defroutes logout
   (auth/wrap-authenticated true "/login"
-                           (GET "/logout" [session]
+                           (GET "/logout" {:keys [session]}
+                                (auth/logout session)
                                 (->
                                  (response/found "/login")
                                  (assoc :session nil)))))

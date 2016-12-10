@@ -3,5 +3,13 @@
             [bouncer.core :as bouncer]
             [bouncer.validators :as v]))
 
-(defrecord User [id firs_name last_name login email user_group last_login
-                 is_active pass])
+(defrecord User [id first_name second_name login email user_group
+                 last_login is_active pass]
+  Validationable
+  (validate-insert [this]
+    (first (bouncer/validate this
+                             :login [v/required]
+                             :email [v/required]
+                             :pass  [v/required]
+                             :first_name [v/required]
+                             :second_name [v/required]))))

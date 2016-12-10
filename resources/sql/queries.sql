@@ -2,7 +2,7 @@
 -- :doc creates a new user record
 INSERT INTO users
 (first_name, last_name, email, login, user_group_id, pass)
-VALUES (:first-name, :second-name, :email, :login, :user-group-id, :pass) RETURNING id
+VALUES (:first_name, :second_name, :email, :login, :user_group_id, :pass) RETURNING id
 
 -- :name update-user! :! :n
 -- :doc update an existing user record
@@ -19,7 +19,12 @@ WHERE id = :id
 
 -- :name get-user-by-login :? :1
 -- :doc retrieve a user given the login.
-SELECT * FROM users
+SELECT users.id, users.first_name, users.last_name
+as second_name, users.login, users.email, users.pass,
+users.is_active, user_groups.alias as user_group,
+user_groups.id as
+user_groups_id
+FROM users, user_groups
 WHERE login = :login
 
 -- :name get-user-info :? :1

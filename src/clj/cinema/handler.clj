@@ -18,7 +18,8 @@
     (-> (routes #'home-routes #'auth-routes)
         (wrap-routes middleware/wrap-csrf)
         (wrap-routes middleware/wrap-formats)
-        (wrap-routes auth/wrap-get-user-info))
+        (wrap-routes auth/wrap-get-user-info)
+        (wrap-routes auth/wrap-update-user-current-route))
     (route/not-found
       (:body
         (error-page {:status 404
