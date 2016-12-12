@@ -43,3 +43,9 @@
   (clojure.string/replace x (re-pattern pattern) value))
 
 (filters/add-filter! :replace replace-filter)
+
+(defn any-of?
+  [x & values]
+  (.contains values x))
+
+(filters/add-filter! :any-of? any-of?)

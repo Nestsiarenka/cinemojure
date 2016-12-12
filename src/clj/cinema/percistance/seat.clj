@@ -10,6 +10,7 @@
     (case current-seat-status
       "free" (case wished-seat-status
                "incart" true
+               "booked" true
                "blocked" true
                false)
       "booked" (case wished-seat-status
@@ -22,9 +23,9 @@
 
 (defn update-seats-mapping
   [value]
-  (db/update-seats! (update value :seat_status
-                            db/keyword->pg-enum "seat_status"))
-  (db/get-sessions-seat value)
+  (when (> (db/update-seats! (update value :seat_status
+                                           db/keyword->pg-enum "seat_status")) 0)
+    (map->Seat (db/get-sessions-seat value)))
   )
 
 (defn update-seats-mapping-validated

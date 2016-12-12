@@ -7,7 +7,8 @@
    [cinema.percistance.auditorium :as percistance-auditorium]
    [cinema.percistance.genre :as percistance-genre]
    [clojure.edn :as edn]
-   [clojure.set :as set]))
+   [clojure.set :as set]
+   [cinema.logic.util :as util]))
 
 (def get-genres percistance-genre/get-genres)
 
@@ -17,8 +18,7 @@
 
 
 (defn add-film! [params]
-  (let [params (when (not (seq? (:genres params)))
-                 (assoc params :genres (list (:genres params))))]
+  (let [params (util/elem->list params :genres)] 
     (-> (select-keys params [:title :duration_minutes
                              :age_limit :logo_url :genres])
         (update :genres (fn [vector]
@@ -31,8 +31,6 @@
 (defn make-map-id [value]
   (hash-map :id (edn/read-string value)))
 
-(defn string->date [string format]
-  (.format (java.text.SimpleDateFormat. format) string))
 
 (defn add-session! [params]
   (->

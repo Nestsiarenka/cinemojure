@@ -31,27 +31,50 @@
               </div>
             </div>
             <div class="raw">
-              <div class="col-md-6 seats">
+              <div class="col-md-7 seats">
                 <h3>Seats:</h3>
                 <ul>
-                  {% for seat in session.seats %}
-                    <dl>
-                      <dt>Raw: </dt>
-                      <dd>{{seat.seat_raw}}</dd>
-                      <dt>Number: </dt>
-                      <dd>{{seat.seat_number}}</dd>
-                      <dt>Type: </dt>
-                      <dd>{{seat.seat_type}}</dd>
-                      <dt>Cost: </dt>
-                      <dd>{{seat.seat_cost}}</dd>
-                      <dt>Status: </dt>
-                      <dd>{{seat.seat_status}}</dd>
-                    </dl>
-                  {% endfor %}
+                  <form action="/performancies/{{session.id}}" method="post">
+                    {% csrf-field %}
+                    {% for seat in session.seats %}
+                      <dl>
+                        <dt>Raw: </dt>
+                        <dd>{{seat.seat_raw}}</dd>
+                        <dt>Number: </dt>
+                        <dd>{{seat.seat_number}}</dd>
+                        <dt>Type: </dt>
+                        <dd>{{seat.seat_type}}</dd>
+                        <dt>Cost: </dt>
+                        <dd>{{seat.seat_cost}}</dd>
+                        <dt>Status: </dt>
+                        <dd>{{seat.seat_status}}</dd>
+                        {% if seat.seat_status|any-of?:free %}
+                          <dd>
+                            <input type="checkbox" name="seats_ids" value="{{seat.seat_id}}">
+                          </dd>
+                        {% endif %}
+                      </dl>
+                    {% endfor %}
+                    <button class="form-control btn btn-login" type="submit" name="submit-booking" value="Submit">Submit</button>
+                  </form>
                 </ul>
               </div>
-              <div class="col-md-6 seats">
-                <h3>Users view this page: {{users-in-route}}</h3>
+              <div class="col-md-5 seats">
+                <div class="raw">
+                  <h3>Users view this page: {{users-in-route}}</h3>
+                </div>
+                <div class="raw">
+                  {{ another-error }}
+                  {% if bought-tickets %} <h3>Bought tickets:</h3> {% endif %}
+                  {% for ticket in bought-tickets %}
+                    <dl>
+                      <dt>Raw: </dt>
+                      <dd>{{ticket.seat_raw}}</dd>
+                      <dt>Number: </dt>
+                      <dd>{{ticket.seat_raw}}</dd>
+                    </dl>
+                  {% endfor %}
+                </div>
               </div>
             </div>
           </div>
