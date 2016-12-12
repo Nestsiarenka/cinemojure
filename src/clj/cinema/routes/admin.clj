@@ -28,7 +28,7 @@
      "add-session.html"
      (-> add-session-result
          (congratulation-or-errors cinema.models.session.Session
-                                   params
+                                   gparams
                                    "session added")
          (assoc :films (admin/get-films)
                 :auditoriums (admin/get-auditoriums))

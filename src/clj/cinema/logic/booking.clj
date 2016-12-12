@@ -4,7 +4,7 @@
             [cinema.logic.util :as util]
             [clojure.edn :as edn]))
 
-(def email-sender (agent '(percistance-seat)))
+(def email-sender (agent '()))
 
 (defn seats_ids->seats [params status]
   (fn [seat_id]
