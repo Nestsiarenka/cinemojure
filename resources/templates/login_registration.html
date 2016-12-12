@@ -64,7 +64,7 @@
                 <div class="form-group {% if errors.repass %}has-error{% endif%}">
                   <input type="password" name="repass" id="repass" tabindex="2" class="form-control" placeholder="Confirm Password">
                   <span class="help-block">{% if errors.repass %}{{errors.repass|first|replace:"must satisfy the given pattern":"must repeate the password"|replace:"repass":"Password confirmation"|capitalize|add:.}}{% endif %}</span>
-                </div>                
+                </div>
                 <div class="form-group">
                   <div class="row">
                     <div class="col-sm-6 col-sm-offset-3">

@@ -15,6 +15,11 @@
              ))
       (db/get-films)))
 
+(defn get-film-by-id [id]
+  (-> id
+      (assoc {} :id)
+      (map->Film (db/get-film-by-id))))
+
 (defn add-film! [film]
   (let [errors (.validate-insert film)]
     (if (nil? errors)

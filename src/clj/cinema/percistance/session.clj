@@ -11,7 +11,8 @@
           (dissoc :auditorium_id :film_id)
           map->Session  
           (assoc :film (map->Film
-                        (assoc (db/get-film-by-id  mapping-param)
+                        (assoc (db/get-film-by-id
+                                {:id (:film_id  mapping-param)})
                                :genres (db/get-films-genres mapping-param)))
                  :auditorium (db/get-auditorium-by-id
                               mapping-param)
@@ -25,16 +26,30 @@
 (defn get-session-by-id [session_id]
   (fill-session (db/get-session-by-id {:id session_id})))
 
+(defn string->date [format string]
+  (.parse (java.text.SimpleDateFormat. format) string))
+
+
 (defn add-session! [session]
   (let [errors (.validate-insert session)]
     (if (nil? errors)
       (merge session (-> session
-                        (assoc :auditorium_id (get-in session
-                                                      [:auditorium :id])
+                        (update :begin_time
+                                (partial string->date "yyyy-MM-dd'T'HH:mm"))
+                        (assoc :auditorium_id (get-in
+                                               session
+                                               [:auditorium :id])
                                :film_id (get-in session [:film :id]))       
                         (db/add-session!)
                         ))
       {:errors errors :values session})))
+
+(defn get-sessions-by-film
+  [film]
+  (->>
+   {:film_id (:id film)}
+   (db/get-sessions-by-film)
+   (map fill-session)))
 
 (defn delete-session! [session]
   (let [errors (.validate-delete session)]

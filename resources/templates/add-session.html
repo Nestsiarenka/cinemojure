@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-6 col-md-offset-3 panel-container">
+    <div class="panel panel-login">
+      <div class="panel-body">
+        <div class="row">
+          <div class="col-lg-12">
+            <form id="login-form" action="/admin/add-session" method="post" role="form">
+              {% csrf-field %}
+              <h2>Add session</h2>
+                {% if congratulation-message %}
+                  <div class="form-group has-success congratulation-message">
+                    <span class="help-block" >{{congratulation-message|capitalize|add:.}}</span>
+                  </div>
+                {% endif %}
+                <div class="form-group {% if errors.begin_time %}has-error{% endif%}">
+                  <h3>Begin time:</h3>
+                  <input type="datetime-local" name="begin_time" id="begin_time" tabindex="1" class="form-control" value="{{values.begin_time}}">
+                  <span class="help-block">{% if errors.begin_time %}{{errors.begin_time|first|replace:"begin_time":"begin time"|capitalize|add:.}}{% endif %}</span>
+                </div>
+                <div class="form-group {% if errors.film.id %}has-error{% endif%}">
+                  <h3>Film:</h3>
+                  <span class="help-block">{% if errors.film.id %}{{errors.film.id|first|capitalize|add:.}}{% endif %}</span>
+                  <select name="film_id" id="film_id" class="form-control">
+                    {% for film in films %}
+                      <option value="{{film.id}}">{{film.title}}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="form-group {% if errors.auditorium.id %}has-error{% endif%}">
+                  <h3>Auditorium:</h3>
+                  <span class="help-block">{% if errors.auditorium.id %}{{errors.auditorium.id|first|capitalize|add:.}}{% endif %}</span>
+                  <select name="auditorium_id" id="auditoriums_id" class="form-control" >
+                    {% for auditorium in auditoriums %}
+                      <option value="{{auditorium.id}}">{{auditorium.name}}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-xs-6 form-group pull-right">
+                      <input type="submit" name="add-film-submit" id="add-film-submit" tabindex="4" class="form-control btn btn-login" value="Ok">
+                </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -166,7 +166,7 @@ label {
   text-align: left;
 }
 
-.panel-login input[type="text"],.panel-login input[type="email"],.panel-login input[type="password"] {
+.panel-login input[type="text"],.panel-login input[type="email"],.panel-login input[type="password"], .panel-login select {
   height: 45px;
   border: 0;
   font-size: 16px;
@@ -180,7 +180,9 @@ label {
   padding: 6px 0px;
 }
 .panel-login input:hover,
-.panel-login input:focus {
+.panel-login input:focus,
+.panel-login select:hover,
+.panel-login select:focus{
   outline:none;
   -webkit-box-shadow: none;
   -moz-box-shadow: none;
@@ -321,5 +323,61 @@ label {
 {
 	color: #e40d09 !important;
 	font-size: 14px;
+	font-weight: 300;
+}
+
+.film-element .logo img
+{
+	width: 100%;
+	height: auto;
+}
+
+.panel-login h3
+{
+	font-size: 18px;
+  font-weight: 300;
+  margin-top: 30px;
+}
+
+.film-element .age-limit
+{
+	font-size: 18px;
+  font-weight: 300;
+	margin-right: 15px;
+}
+
+.film-element h2
+{
+	font-size: 24px;
+  font-weight: 300;
+  margin-top: 30px;
+}
+
+
+
+.film-element li
+{
+	font-size: 16px;
+	font-weight: 300;
+}
+
+.film-element dd
+{
+	font-size: 16px;
+	font-weight: 300;
+}
+
+.film-element dt
+{
+	display: inline;
+}
+
+.film-element dd
+{
+	display: inline;
+}
+.congratulation-message
+{
+	font-size: 16px;
 	font-weight: 300;
 }

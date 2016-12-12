@@ -14,7 +14,7 @@
                             [:film :id] [v/required
                                          v/number
                                          v/positive]
-                            :begin_time [v/required])
+                            :begin_time [v/required v/datetime])
           (first)))
   (validate-update [this]
     (merge (validate-insert this)

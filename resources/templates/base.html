@@ -37,10 +37,18 @@
               {% else %}
               <li class="{% ifequal page "login_registration.html" %}active{%endifequal%}"><a href="/login">Login</a></li>
               {% endif %}
-             
+
             </ul>
             <ul class="nav navbar-nav">
-                <li class="{% ifequal page "home.html" %}active{%endifequal%}"><a href="/">Performancies</a></li>
+                <li class="{% ifequal page "performancies.html" %}active{%endifequal%}"><a href="/performancies">Performancies</a></li>
+                {% ifequal user.user_group.alias "admin" %}
+                  <li class="{% ifequal page "admin.html" %}active{%endifequal%}"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Admin panel</a>
+                    <ul class="dropdown-menu multi-level">
+                        <li><a href="/admin/add-film">Add film</a></li>
+                        <li><a href="/admin/add-session">Add session</a></li>
+                    </ul>
+                  </li>
+                {% endifequal %}
                 <!--
                 <li>
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Menu 1 <b class="caret"></b></a>
@@ -138,7 +146,7 @@
                             </ul>
                         </li>
                     </ul>-->
-                </li> 
+                </li>
             </ul>
         </div><!--/.nav-collapse -->
     </div>

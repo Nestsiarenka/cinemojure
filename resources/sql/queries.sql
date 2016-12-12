@@ -25,7 +25,7 @@ users.is_active, user_groups.alias as user_group,
 user_groups.id as
 user_groups_id
 FROM users, user_groups
-WHERE login = :login
+WHERE users.user_group_id = user_groups.id AND login = :login
 
 -- :name get-user-info :? :1
 -- :doc retrieve info about user
@@ -76,7 +76,7 @@ SELECT * FROM films
 DELETE FROM films WHERE id = :id
 
 -- :name get-film-by-id :? :1
-SELECT * FROM films WHERE id = :film_id
+SELECT * FROM films WHERE id = :id
 
 -- :name add-films-genres! :! :n
 -- :doc creates a new films genres records
@@ -106,7 +106,10 @@ INSERT INTO auditoriums
 VALUES (:name) RETURNING id
 
 -- :name get-auditorium-by-id :? :1
-SELECT * FROM auditoriums WHERE id = :auditorium_id
+SELECT * FROM auditoriums WHERE id = :id
+
+-- :name get-auditoriums :? :*
+SELECT * FROM auditoriums
 
 -- :name create-auditorium-parameters! :! :n
 -- :doc creates a new auditorium parameters records

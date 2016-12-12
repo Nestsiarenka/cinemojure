@@ -218,9 +218,7 @@ with bouncer validation library"
     (let [user (get-from-loged-users (:id session)
                                      (:login-time session))]
       (-> user
-          (assoc :current-route (get-in request
-                                        [:compojure/route
-                                         1]))
+          (assoc :current-route (:uri request))
           (update-in-loged-users)))
     (handler request)
     ))

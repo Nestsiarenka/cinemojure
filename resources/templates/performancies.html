@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% for film in films %}
+<div class="row panel-container">
+  <div class="col-lg-12 panel panel-login">
+        <div class="row film-element">
+          <div class="row">
+            <div class="col-md-3 logo">
+              <img src="{{film.logo_url}}"/>
+            </div>
+            <div class="col-md-9">
+              <div class="raw">
+                <div class="col-md-8 title">
+                  <h2>{{film.title}}</h2>
+                </div>
+                <div class="col-md-4 genres">
+                  <h3>Genres:</h3>
+                  <ul>
+                    {% for genre in film.genres %}
+                    <li>{{genre.name}} </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              </div>
+              <div class="raw">
+                <div class="col-md-12">
+                   <h3>Performancies:</h3>
+                   <ul>
+                     {% for session in film.sessions %}
+                     <li><a href="performancies/{{session.id}}">{{session.begin_time|date:"HH:mm"}}</a> </li>
+                     {% endfor %}
+                   </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

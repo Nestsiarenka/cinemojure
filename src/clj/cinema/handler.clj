@@ -3,6 +3,10 @@
             [cinema.layout :refer [error-page]]
             [cinema.routes.home :refer [home-routes]]
             [cinema.routes.auth :refer [auth-routes]]
+            [cinema.routes.performancies :refer
+             [performancies-routes]]
+            [cinema.routes.admin :refer [admin-routes]]
+            [cinema.routes.booking :refer [booking-routes]]
             [compojure.route :as route]
             [cinema.env :refer [defaults]]
             [mount.core :as mount]
@@ -15,7 +19,10 @@
 
 (def app-routes
   (routes
-    (-> (routes #'home-routes #'auth-routes)
+    (-> (routes #'home-routes #'auth-routes
+                #'performancies-routes #'admin-routes
+                #'booking-routes
+                )
         (wrap-routes middleware/wrap-csrf)
         (wrap-routes middleware/wrap-formats)
         (wrap-routes auth/wrap-get-user-info)
