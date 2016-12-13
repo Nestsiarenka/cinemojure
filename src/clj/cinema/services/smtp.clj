@@ -15,4 +15,4 @@
     smtp-protocol
     (send-email [x data]
       (spit (:address *smtp-connection*)
-            (data->string data))))
+            (data->string data) :append true)))

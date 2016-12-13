@@ -1,5 +1,9 @@
 (ns cinema.routes.admin
-  (:require [cinema.logic.admin :as admin]
+  (:require
+            [cinema.logic.admin :refer [get-genres
+                                        get-films
+                                        get-auditoriums]]
+            [cinema.logic.dslcinema :refer [add]]
             [cinema.layout :as layout]
             [compojure.core :refer [routes defroutes
                                    context GET POST]]
@@ -12,26 +16,26 @@
     (merge params add-result)))
 
 (defn add-film! [params]
-  (let [add-film-result (admin/add-film! params)]
+  (let [add-film-result (add film params)]
     (layout/render
      "add-film.html"
      (-> add-film-result
          (congratulation-or-errors cinema.models.film.Film params
                                    "film added")
-         (assoc :genres (admin/get-genres))))
+         (assoc :genres (get-genres))))
     )
   )
 
 (defn add-session! [params]
-  (let [add-session-result (admin/add-session! params)]
+  (let [add-session-result (add session params)]
     (layout/render
      "add-session.html"
      (-> add-session-result
          (congratulation-or-errors cinema.models.session.Session
                                    params
                                    "session added")
-         (assoc :films (admin/get-films)
-                :auditoriums (admin/get-auditoriums))
+         (assoc :films (get-films)
+                :auditoriums (get-auditoriums))
          ))))
 
 (defroutes admin
@@ -39,7 +43,7 @@
            (GET "/add-film" {:keys [params]}
                 (layout/render "add-film.html"
                                (assoc params
-                                      :genres (admin/get-genres))))
+                                      :genres (get-genres))))
            (POST "/add-film" {:keys [params]}
                  (add-film! params))
            (GET "/add-session" {:keys [params]}
@@ -47,7 +51,7 @@
                                (assoc params
                                       :films (admin/get-films)
                                       :auditoriums
-                                      (admin/get-auditoriums))))
+                                      (get-auditoriums))))
            (POST "/add-session" {:keys [params]}
                  (add-session! params))))
 

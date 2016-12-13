@@ -20,6 +20,9 @@
           vector-or-single)]
     (map #(hash-map :id (string->int %)) exactly-vector)))
 
+(defn elem->id-elem [elem]
+  {:id (string->int elem)})
+
 (defn string->date [format string]
   (.parse (java.text.SimpleDateFormat. format) string))
 
@@ -29,8 +32,8 @@
           :age_limit string->int
           :logo_url identity
           :genres vector->ids-vector]
-   :sessions [:auditorium vector->ids-vector
-              :film vector->ids-vector
+   :session [:auditorium elem->id-elem
+              :film elem->id-elem
               :begin_time (partial string->date "yyyy-MM-dd'T'HH:mm")]})
 
 (defn convert [type data]

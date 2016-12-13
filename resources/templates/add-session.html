@@ -23,7 +23,7 @@
                 <div class="form-group {% if errors.film.id %}has-error{% endif%}">
                   <h3>Film:</h3>
                   <span class="help-block">{% if errors.film.id %}{{errors.film.id|first|capitalize|add:.}}{% endif %}</span>
-                  <select name="film_id" id="film_id" class="form-control">
+                  <select name="film" id="film" class="form-control">
                     {% for film in films %}
                       <option value="{{film.id}}">{{film.title}}</option>
                     {% endfor %}
@@ -32,7 +32,7 @@
                 <div class="form-group {% if errors.auditorium.id %}has-error{% endif%}">
                   <h3>Auditorium:</h3>
                   <span class="help-block">{% if errors.auditorium.id %}{{errors.auditorium.id|first|capitalize|add:.}}{% endif %}</span>
-                  <select name="auditorium_id" id="auditoriums_id" class="form-control" >
+                  <select name="auditorium" id="auditorium" class="form-control" >
                     {% for auditorium in auditoriums %}
                       <option value="{{auditorium.id}}">{{auditorium.name}}</option>
                     {% endfor %}
