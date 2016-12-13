@@ -12,7 +12,7 @@
     (layout/render
      "performance.html"
      (->
-      (if (or (nil? (empty? bought-tickets)))
+      (if (or (nil? bought-tickets) (empty? bought-tickets))
         (assoc params :another-error
                "Tickets were not bought. Call admin, please.")
         (do             

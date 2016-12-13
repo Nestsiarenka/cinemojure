@@ -26,16 +26,11 @@
 (defn get-session-by-id [session_id]
   (fill-session (db/get-session-by-id {:id session_id})))
 
-(defn string->date [format string]
-  (.parse (java.text.SimpleDateFormat. format) string))
-
 
 (defn add-session! [session]
   (let [errors (.validate-insert session)]
     (if (nil? errors)
       (merge session (-> session
-                        (update :begin_time
-                                (partial string->date "yyyy-MM-dd'T'HH:mm"))
                         (assoc :auditorium_id (get-in
                                                session
                                                [:auditorium :id])

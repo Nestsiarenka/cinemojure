@@ -16,7 +16,6 @@
 
 (def get-auditoriums percistance-auditorium/get-auditoriums )
 
-
 (defn add-film! [params]
   (let [params (util/elem->list params :genres)] 
     (-> (select-keys params [:title :duration_minutes

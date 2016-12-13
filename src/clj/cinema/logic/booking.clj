@@ -2,9 +2,10 @@
   (:require [cinema.percistance.seat :as percistance-seat]
             [cinema.models.seat :refer :all]
             [cinema.logic.util :as util]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+            [cinema.services.smtp :refer :all]))
 
-(def email-sender (agent '()))
+(def email-sender (agent (->Smtp)))
 
 (defn seats_ids->seats [params status]
   (fn [seat_id]
@@ -15,6 +16,17 @@
 
 (defn book-seats! [params]
   (let [params (util/elem->list params :seats_ids)]
-    (filter some?
-            (-> (map (seats_ids->seats params "booked") (:seats_ids params))
-                (percistance-seat/update-seats-validated!)))))
+    (let [booked-tickets
+          (filter some?
+                  (-> (map (seats_ids->seats params "booked")
+                           (:seats_ids params))
+                      (percistance-seat/update-seats-validated!)))]
+      (when (and (some? booked-tickets)
+                 (not (empty? booked-tickets)))
+        (send email-sender (fn [sender]
+                             (.send-email sender
+                                   {:email
+                                    (get-in params
+                                            [:user :email])
+                                    :message "Hi friend."}))))
+      booked-tickets)))

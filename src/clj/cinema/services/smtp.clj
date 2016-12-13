@@ -1,6 +1,6 @@
 (ns cinema.services.smtp)
 
-(def ^:dynamic *smtp-connection* {:address "smtp.txt"})
+(def ^:dynamic *smtp-connection* {:address "D:/smtp.txt"})
 
 (defn reduce-data [before [key value]]
   (str before (str (name key) ": " value ";"))) 
@@ -9,8 +9,10 @@
   (reduce reduce-data "" data))
 
 (defprotocol smtp-protocol
-  (send-email [data]))
+  (send-email [x data]))
 
 (defrecord Smtp []
     smtp-protocol
-    (send-email [data] (spit (:address () *smtp-connection*))))
+    (send-email [x data]
+      (spit (:address *smtp-connection*)
+            (data->string data))))
