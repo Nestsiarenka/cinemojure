@@ -1,2 +1,4 @@
 - make email case insensitive (write lower case to db)
 - set user group by alias, not by id
+- add logger to registration action and login action
+- add user last-login recording

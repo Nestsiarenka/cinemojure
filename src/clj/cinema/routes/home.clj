@@ -13,5 +13,5 @@
 
 (defroutes home-routes
   (GET "/" {:keys [params]} (home-page params))
-  (GET "/about" [] (about-page)))
+  (GET "/about" request (str request)))
 

@@ -49,7 +49,7 @@
            (GET "/add-session" {:keys [params]}
                 (layout/render "add-session.html"
                                (assoc params
-                                      :films (admin/get-films)
+                                      :films (get-films)
                                       :auditoriums
                                       (get-auditoriums))))
            (POST "/add-session" {:keys [params]}
