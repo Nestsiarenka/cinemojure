@@ -6,13 +6,16 @@
             [cinema.auth :as auth]
             ))
 
-(defn write-session
+(defn redirect-home-with-session [user]
+  (-> (response/found "/")
+        (assoc :session {:id (:id user)
+                         :login-time (:login-time
+                                      user)})))
+
+(defn render-login-registration
   [user-or-error-map previous-operation]
   (if (not (nil? (:id user-or-error-map)))
-    (-> (response/found "/")
-        (assoc :session {:id (:id user-or-error-map)
-                         :login-time (:login-time
-                                      user-or-error-map)}))
+    (redirect-home-with-session user-or-error-map)
     (layout/render "login_registration.html"
                    (assoc user-or-error-map :form
                           previous-operation))))
@@ -21,7 +24,7 @@
   [params]
   "Make registarion of user using cinema.auth"
   (-> (auth/registr! params)
-      (write-session "registration")))
+      (render-login-registration "registration")))
 
 (defroutes registration-routes
   (context "/registration" []
@@ -33,15 +36,27 @@
 (defn login
   [params]
   (-> (auth/login params)
-      (write-session "login")))
+      (render-login-registration "login")))
 
 (defroutes login-routes
 
   (context "/login" []
            (GET "/" [] (layout/render "login_registration.html"
-                                       {:form "login"}))
+                                      {:form "login"}))
            (POST "/" {:keys [params]}
-                 (login params))))
+                 (login params)))
+  
+(GET "/login/google" request
+     (let [user-or-errors
+              (auth/do-authorized-google
+               request
+               #(auth/find-or-create-user-google! %))]
+       (if (instance? cinema.models.user.User user-or-errors)
+         (redirect-home-with-session user-or-errors)
+          user-or-errors)))
+
+  (GET "/oauth2-callback-google" request
+       (auth/oauth2-call-back-handler-google request)))
 
 (defroutes logout
   (auth/wrap-authenticated true "/login"

@@ -4,7 +4,7 @@
             [bouncer.validators :as v]))
 
 (defrecord User [id first_name second_name login email user_group
-                 last_login is_active pass]
+                 last_login is_active pass oauth_id oauth_provider]
   Validationable
   (validate-insert [this]
     (first (bouncer/validate this

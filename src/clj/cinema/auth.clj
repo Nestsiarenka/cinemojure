@@ -6,7 +6,10 @@
             [compojure.core :refer [wrap-routes defroutes routes]]
             [ring.util.response :refer [redirect]]
             [cinema.percistance.user :refer :all]
-            [cinema.models.user :refer :all]))
+            [cinema.models.user :refer :all]
+            [oauth2-client.core :as oauth2]
+            [oauth2-client.ring :as oauth2-ring]
+            [cinema.config :refer [env]]))
 
 (def loged-users (atom ()))
 
@@ -230,3 +233,44 @@ with bouncer validation library"
            (:current-route %))
        @loged-users)
       (count)))
+
+
+(defn find-or-create-user! [user-info-url provider-name
+                           access_token]
+  (let [{:keys [id given_name family_name]}
+        (oauth2/parse-json-access-token-response
+         (oauth2/authorized-request :get
+                                    access_token
+                                    user-info-url))]
+    (add-to-loged-users
+     (if-let [user (get-user-oauth id provider-name)]
+       user
+       (create-user-force!
+        (->User nil given_name family_name
+                (str id provider-name)
+                (str id provider-name)
+                {:id 2}
+                nil true ""
+                id provider-name))))))
+
+(def oauth2-config-google
+  {:authorization-uri "https://accounts.google.com/o/oauth2/auth"
+     :access-token-uri "https://www.googleapis.com/oauth2/v3/token"
+     :client-id (:client-id-google env)
+     :client-secret (:client-secret-google env)
+     :redirect-uri "https://localhost:3001/oauth2-callback-google"
+     :scope "profile"
+     })
+
+(def do-authorized-google (partial oauth2-ring/do-authorized
+                                   oauth2-config-google))
+
+(def oauth2-call-back-handler-google
+  (partial oauth2-ring/oauth2-callback-handler
+           oauth2-config-google))
+
+
+(def find-or-create-user-google!
+  (partial find-or-create-user!
+           "https://www.googleapis.com/oauth2/v2/userinfo"
+           "google"))

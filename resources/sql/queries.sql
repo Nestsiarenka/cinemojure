@@ -1,8 +1,8 @@
 -- :name create-user! :<! :1
 -- :doc creates a new user record
 INSERT INTO users
-(first_name, last_name, email, login, user_group_id, pass)
-VALUES (:first_name, :second_name, :email, :login, :user_group_id, :pass) RETURNING id
+(first_name, last_name, email, login, user_group_id, pass, oauth_id, oauth_provider)
+VALUES (:first_name, :second_name, :email, :login, :user_group_id, :pass, :oauth_id, :oauth_provider) RETURNING id
 
 -- :name update-user! :! :n
 -- :doc update an existing user record
@@ -26,6 +26,18 @@ user_groups.id as
 user_groups_id
 FROM users, user_groups
 WHERE users.user_group_id = user_groups.id AND login = :login
+
+-- :name get-user-oauth :? :1
+-- :doc retrieve a user given the login.
+SELECT users.id, users.first_name, users.last_name
+as second_name, users.login, users.email, users.pass,
+users.is_active, users.oauth_id, users.oauth_provider,
+user_groups.alias as user_group,
+user_groups.id as
+user_groups_id
+FROM users, user_groups
+WHERE users.user_group_id = user_groups.id AND oauth_id = :oauth_id
+AND oauth_provider = :oauth_provider
 
 -- :name get-user-info :? :1
 -- :doc retrieve info about user
