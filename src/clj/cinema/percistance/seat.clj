@@ -10,7 +10,6 @@
     (case current-seat-status
       "free" (case wished-seat-status
                "incart" true
-               "booked" true
                "blocked" true
                false)
       "booked" (case wished-seat-status

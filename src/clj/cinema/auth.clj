@@ -254,7 +254,8 @@ with bouncer validation library"
                 id provider-name))))))
 
 (def oauth2-config-google
-  {:authorization-uri "https://accounts.google.com/o/oauth2/auth"
+  {
+     :authorization-uri "https://accounts.google.com/o/oauth2/auth"
      :access-token-uri "https://www.googleapis.com/oauth2/v3/token"
      :client-id (:client-id-google env)
      :client-secret (:client-secret-google env)
