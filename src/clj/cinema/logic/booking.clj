@@ -86,3 +86,4 @@
 (let [task (proxy [TimerTask] []
              (run [] check-carts))]
   (. (new Timer) (schedule task (long 60000))))
+

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="row panel-container">
+    <div class="col-lg-12 panel panel-login">
+      <div class="row film-element film-only-one">
+        <div class="raw">  
+            <div class="raw">
+              <div class="col-md-12 seats">
+                <h3>Seats:</h3>
+                <ul>
+                  <form action="/cart" method="post">
+                    {% csrf-field %}
+                    {% for seat in user.cart.seats %}
+                      <dl>
+                        <dt>Raw: </dt>
+                        <dd>{{seat.seat_raw}}</dd>
+                        <dt>Number: </dt>
+                        <dd>{{seat.seat_number}}</dd>
+                        <dt>Type: </dt>
+                        <dd>{{seat.seat_type}}</dd>
+                        <dt>Cost: </dt>
+                        <dd>{{seat.seat_cost}}</dd>
+                        <dt>Status: </dt>
+                        <dd>{{seat.seat_status}}</dd>
+                        {% if seat.seat_status|any-of?:incart %}
+                          <dd>
+                            <input type="checkbox" name="seats_ids" value="{{seat.seat_id}}">
+                          </dd>
+                          <form action="/cart" method="delete">
+                            <input type="hidden" name="seat_id"
+                                   value="{{seat.seat_id}}">
+                          <dd>
+                            <input type="submit" name="seat-delte" value="Delete">
+                          </dd>
+                          </form>
+                        {% endif %}
+                      </dl>
+                    {% endfor %}
+                    <button class="form-control btn btn-login" type="submit" name="submit-booking" value="Submit">Submit</button>
+                  </form>
+                </ul>
+              </div>             
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
